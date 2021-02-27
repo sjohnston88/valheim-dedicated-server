@@ -1,0 +1,96 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Valheim server
+Parameters:
+  ServerName:
+    Type: String
+    Description: The public name for your Valheim dedicated server
+    Default: "Dedicated Valheim server"
+  ServerPassword:
+    Type: String
+    Description: The password for your Valheim dedicated server.
+    Default: "FireViking!"
+
+Resources:
+  # Configure instance - use t3.micro to stay within AWS free tier
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t3.micro
+      KeyName: valheim-server
+      IamInstanceProfile: !Ref InstanceProfile
+      SecurityGroups:
+        - Ref: InstanceSecurityGroup
+      ImageId: ami-0713f98de93617bb4
+      UserData:
+        Fn::Base64: !Sub |
+           #!/bin/bash -ex
+
+          apt-get update
+          apt-get install lib32gcc1 -y
+          mkdir /steam && cd /steam
+          wget https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz
+          tar -xvzf steamcmd_linux.tar.gz
+          /steam/steamcmd.sh +login anonymous +force_install_dir /steam/valheimserver +app_update 896660 validate +exit
+
+      Tags:
+        - Key: Name
+          Value: Valheim-EC2Instance
+
+  # Create security rules for the instance
+  InstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Valheim inbound and outbound security
+      SecurityGroupIngress:
+        - Description: Valheim default UDP ports.
+          IpProtocol: udp
+          FromPort: 2456
+          ToPort: 2458
+          CidrIp: 0.0.0.0/0
+        - Description: SSH traffic
+          IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: Valheim-EC2SecurityGroup
+
+  # Create and associate an elastic IP to the instance
+  ElasticIPAddress:
+    DependsOn: EC2Instance
+    Type: AWS::EC2::EIP
+    Properties:
+      InstanceId: !Ref EC2Instance
+      Tags:
+        - Key: Name
+          Value: Valheim-EC2ElasticIPAddress
+
+  # Create a role for the instance
+  InstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: Valheim-IAMRole
+      Path: /
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Tags:
+        - Key: Name
+          Value: Valheim-IAMRole
+
+  # Create an IAM profile for the instance
+  InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      InstanceProfileName: Valheim-IAMInstanceProfile
+      Path: /
+      Roles:
+        - !Ref InstanceRole
