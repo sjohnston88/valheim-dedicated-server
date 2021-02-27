@@ -5,6 +5,10 @@ Parameters:
     Type: String
     Description: The public name for your Valheim dedicated server
     Default: "Dedicated Valheim server"
+  AMI:
+    Type: String
+    Description: The Base image for your server, defaults to Amazon AMI eu-west-2
+    Default: ami-0ffd774e02309201f
   ServerPassword:
     Type: String
     Description: The password for your Valheim dedicated server.
@@ -19,7 +23,7 @@ Resources:
       IamInstanceProfile: !Ref InstanceProfile
       SecurityGroups:
         - Ref: InstanceSecurityGroup
-      ImageId: ami-096f43ef67d75e998
+      ImageId: !Ref AMI
       UserData:
         Fn::Base64: !Sub |
           #!/bin/bash -ex
