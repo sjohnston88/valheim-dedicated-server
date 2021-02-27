@@ -15,7 +15,7 @@ Resources:
     Type: AWS::EC2::Instance
     Properties:
       InstanceType: t3.micro
-      KeyName: Valheim-server
+      KeyName: valheim-server
       IamInstanceProfile: !Ref InstanceProfile
       SecurityGroups:
         - Ref: InstanceSecurityGroup
