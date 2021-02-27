@@ -4,7 +4,7 @@ Parameters:
   ServerName:
     Type: String
     Description: The public name for your Valheim dedicated server
-    Default: "Dedicated Valheim server"
+    Default: "Weasels Dedicated Valheim server - LDN"
   AMI:
     Type: String
     Description: The Base image for your server, defaults to Amazon AMI eu-west-2
@@ -14,11 +14,10 @@ Parameters:
     Description: The password for your Valheim dedicated server.
 
 Resources:
-  # Configure instance - use t3.micro to stay within AWS free tier
   EC2Instance:
     Type: AWS::EC2::Instance
     Properties:
-      InstanceType: t3.micro
+      InstanceType: t3.medium
       KeyName: valheim-server
       IamInstanceProfile: !Ref InstanceProfile
       SecurityGroups:
@@ -28,12 +27,37 @@ Resources:
         Fn::Base64: !Sub |
           #!/bin/bash
 
+          # Update server and install dependencies
           yum update -y
-          yum install lib32gcc1 -y
-          mkdir /steam && cd /steam
-          wget https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz
-          tar -xvzf steamcmd_linux.tar.gz
-          /home/ec2-user/steam/steamcmd.sh +login anonymous +force_install_dir /home/ec2-user/steam/valheimserver +app_update 896660 validate +exit
+          yum install epel-release -y
+          yum yum install curl wget tar bzip2 gzip unzip python3 binutils bc jq tmux glibc.i686 libstdc++ libstdc++.i686 -y
+
+          # Use LinuxGSM automated install
+          wget -O linuxgsm.sh https://linuxgsm.sh && chmod +x linuxgsm.sh && bash linuxgsm.sh vhserver
+          ./vhserver install
+
+          # Install Valheim
+          ./vhserver auto-install
+
+          # Configure the server with our parameters
+          cd /home/ec2-user/serverfiles
+          sed -i 's/\"My server\"/\"${ServerName}\"/g' start_server.sh 
+          sed -i 's/\"Dedicated\"/\"${ServerName}\"/g' start_server.sh 
+          sed -i 's/\"secret\"/\"${ServerPassword}\"/g' start_server.sh
+          cd /home/ec2-user
+
+          # Start the server
+          ./vhserver start
+
+          # Check everything is working
+          ./vhserver monitor
+
+          # Setup cronjobs
+          crontab<<EOF
+          */5 * * * * /home/vhserver/vhserver monitor > /dev/null 2>&1
+          */30 * * * * /home/vhserver/vhserver update > /dev/null 2>&1
+          0 0 * * 0 /home/vhserver/vhserver update-lgsm > /dev/null 2>&1
+          EOF
 
       Tags:
         - Key: Name
