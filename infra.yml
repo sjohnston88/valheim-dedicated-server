@@ -8,7 +8,6 @@ Parameters:
   ServerPassword:
     Type: String
     Description: The password for your Valheim dedicated server.
-    Default: "FireViking!"
 
 Resources:
   # Configure instance - use t3.micro to stay within AWS free tier
@@ -16,7 +15,7 @@ Resources:
     Type: AWS::EC2::Instance
     Properties:
       InstanceType: t3.micro
-      KeyName: valheim-server
+      KeyName: Valheim-server
       IamInstanceProfile: !Ref InstanceProfile
       SecurityGroups:
         - Ref: InstanceSecurityGroup
