@@ -30,3 +30,4 @@ Please create issues if you find any :)
 - Output ElasticIP
 - Route53 DNS records
 - Automated nightly backups
+- Remove KeyPair from EC2 cloudformation when finished
