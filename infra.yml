@@ -26,14 +26,14 @@ Resources:
       ImageId: !Ref AMI
       UserData:
         Fn::Base64: !Sub |
-        #!/bin/bash
+          #!/bin/bash
 
-        yum update -y
-        yum install lib32gcc1 -y
-        mkdir /steam && cd /steam
-        wget https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz
-        tar -xvzf steamcmd_linux.tar.gz
-        /home/ec2-user/steam/steamcmd.sh +login anonymous +force_install_dir /home/ec2-user/steam/valheimserver +app_update 896660 validate +exit
+          yum update -y
+          yum install lib32gcc1 -y
+          mkdir /steam && cd /steam
+          wget https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz
+          tar -xvzf steamcmd_linux.tar.gz
+          /home/ec2-user/steam/steamcmd.sh +login anonymous +force_install_dir /home/ec2-user/steam/valheimserver +app_update 896660 validate +exit
 
       Tags:
         - Key: Name
