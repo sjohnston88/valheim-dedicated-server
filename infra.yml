@@ -25,16 +25,38 @@ Resources:
       ImageId: !Ref AMI
       UserData:
         Fn::Base64: !Sub |
+          Content-Type: multipart/mixed; boundary="//"
+          MIME-Version: 1.0
+
+          --//
+          Content-Type: text/cloud-config; charset="us-ascii"
+          MIME-Version: 1.0
+          Content-Transfer-Encoding: 7bit
+          Content-Disposition: attachment; filename="cloud-config.txt"
+
+          #cloud-config
+          cloud_final_modules:
+          - [scripts-user, always]
+
+          --//
+          Content-Type: text/x-shellscript; charset="us-ascii"
+          MIME-Version: 1.0
+          Content-Transfer-Encoding: 7bit
+          Content-Disposition: attachment; filename="userdata.txt"
+
           #!/bin/bash
 
           # Update server and install dependencies
           yum update -y
           yum install epel-release -y
-          yum yum install curl wget tar bzip2 gzip unzip python3 binutils bc jq tmux glibc.i686 libstdc++ libstdc++.i686 -y
+          yum install curl wget tar bzip2 gzip unzip python3 binutils bc jq tmux glibc.i686 libstdc++ libstdc++.i686 -y
+
+          # Create new user to use
+          adduser vhserver
+          su - vhserver
 
           # Use LinuxGSM automated install
           wget -O linuxgsm.sh https://linuxgsm.sh && chmod +x linuxgsm.sh && bash linuxgsm.sh vhserver
-          ./vhserver install
 
           # Install Valheim
           ./vhserver auto-install
