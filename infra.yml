@@ -20,10 +20,10 @@ Resources:
       IamInstanceProfile: !Ref InstanceProfile
       SecurityGroups:
         - Ref: InstanceSecurityGroup
-      ImageId: ami-0713f98de93617bb4
+      ImageId: ami-096f43ef67d75e998
       UserData:
         Fn::Base64: !Sub |
-           #!/bin/bash -ex
+          #!/bin/bash -ex
 
           apt-get update
           apt-get install lib32gcc1 -y
