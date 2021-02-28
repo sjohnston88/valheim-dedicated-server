@@ -145,3 +145,8 @@ Resources:
       Path: /
       Roles:
         - !Ref InstanceRole
+
+Outputs:
+  Server URL:
+    Description: The IP and Port you can use to connect to your server
+    Value: !Sub "http://${ElasticIPAddress}:2457"
