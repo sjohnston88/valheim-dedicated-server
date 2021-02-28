@@ -147,6 +147,6 @@ Resources:
         - !Ref InstanceRole
 
 Outputs:
-  Server URL:
-    Description: The IP and Port you can use to connect to your server
-    Value: !Sub "http://${ElasticIPAddress}:2457"
+  Server Public IP:
+    Description: The IP you can use to connect to your server
+    Value: !GetAtt ElasticIPAddress.PublicIp

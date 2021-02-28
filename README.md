@@ -1,6 +1,6 @@
 # Valheim Server
 
-Automated Valheim dedicated server installation which runs using AWS EC2 within the free tier.
+Automated Valheim dedicated server installation which spins up a AWS EC2 t2.medium instance running red hat based OS. (Amazon Linux/CentOS). Installs and starts your server automatically using LinuxGSM and sets up some email alerts for when the server is updated or down.
 
 ## Requirements
 
