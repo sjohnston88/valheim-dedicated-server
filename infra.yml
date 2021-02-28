@@ -4,7 +4,7 @@ Parameters:
   ServerName:
     Type: String
     Description: The public name for your Valheim dedicated server
-    Default: "Weasels Dedicated Valheim server - LDN"
+    Default: "Dedicated Valheim server - LDN"
   AMI:
     Type: String
     Description: The Base image for your server, defaults to Amazon AMI eu-west-2
@@ -12,12 +12,15 @@ Parameters:
   ServerPassword:
     Type: String
     Description: The password for your Valheim dedicated server.
+  EmailAddress:
+    Type: String
+    Description: An email address to use for server change notifications. (restarted|updated|crashed)
 
 Resources:
   EC2Instance:
     Type: AWS::EC2::Instance
     Properties:
-      InstanceType: t3.medium
+      InstanceType: t2.medium
       KeyName: valheim-server
       IamInstanceProfile: !Ref InstanceProfile
       SecurityGroups:
@@ -62,11 +65,9 @@ Resources:
           ./vhserver auto-install
 
           # Configure the server with our parameters
-          cd /home/ec2-user/serverfiles
-          sed -i 's/\"My server\"/\"${ServerName}\"/g' start_server.sh 
-          sed -i 's/\"Dedicated\"/\"${ServerName}\"/g' start_server.sh 
-          sed -i 's/\"secret\"/\"${ServerPassword}\"/g' start_server.sh
-          cd /home/ec2-user
+          sed -i 's/\"My server\"/\"${ServerName}\"/g' /home/ec2-user/serverfiles/start_server.sh 
+          sed -i 's/\"Dedicated\"/\"${ServerName}\"/g' /home/ec2-user/serverfiles/start_server.sh 
+          sed -i 's/\"secret\"/\"${ServerPassword}\"/g' /home/ec2-user/serverfiles/start_server.sh
 
           # Start the server
           ./vhserver start
@@ -76,6 +77,7 @@ Resources:
 
           # Setup cronjobs
           crontab<<EOF
+          MAILTO="${EmailAddress}""
           */5 * * * * /home/vhserver/vhserver monitor > /dev/null 2>&1
           */30 * * * * /home/vhserver/vhserver update > /dev/null 2>&1
           0 0 * * 0 /home/vhserver/vhserver update-lgsm > /dev/null 2>&1
