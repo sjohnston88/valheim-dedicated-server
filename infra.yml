@@ -147,6 +147,6 @@ Resources:
         - !Ref InstanceRole
 
 Outputs:
-  Server Public IP:
+  ServerPublicIP:
     Description: The IP you can use to connect to your server
     Value: !GetAtt ElasticIPAddress.PublicIp
