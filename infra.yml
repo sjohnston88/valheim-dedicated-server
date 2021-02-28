@@ -4,21 +4,23 @@ Parameters:
   ServerName:
     Type: String
     Description: The public name for your Valheim dedicated server
-    Default: "Dedicated Valheim server"
+    Default: "Dedicated Valheim server - LDN"
   AMI:
     Type: String
     Description: The Base image for your server, defaults to Amazon AMI eu-west-2
-    Default: ami-0ffd774e02309201f
+    Default: "ami-0ffd774e02309201f"
   ServerPassword:
     Type: String
     Description: The password for your Valheim dedicated server.
+  EmailAddress:
+    Type: String
+    Description: An email address to use for server change notifications. (restarted|updated|crashed)
 
 Resources:
-  # Configure instance - use t3.micro to stay within AWS free tier
   EC2Instance:
     Type: AWS::EC2::Instance
     Properties:
-      InstanceType: t3.micro
+      InstanceType: t2.medium
       KeyName: valheim-server
       IamInstanceProfile: !Ref InstanceProfile
       SecurityGroups:
@@ -26,14 +28,63 @@ Resources:
       ImageId: !Ref AMI
       UserData:
         Fn::Base64: !Sub |
-          #!/bin/bash -ex
+          Content-Type: multipart/mixed; boundary="//"
+          MIME-Version: 1.0
 
-          apt-get update
-          apt-get install lib32gcc1 -y
-          mkdir /steam && cd /steam
-          wget https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz
-          tar -xvzf steamcmd_linux.tar.gz
-          /steam/steamcmd.sh +login anonymous +force_install_dir /steam/valheimserver +app_update 896660 validate +exit
+          --//
+          Content-Type: text/cloud-config; charset="us-ascii"
+          MIME-Version: 1.0
+          Content-Transfer-Encoding: 7bit
+          Content-Disposition: attachment; filename="cloud-config.txt"
+
+          #cloud-config
+          cloud_final_modules:
+          - [scripts-user, always]
+
+          --//
+          Content-Type: text/x-shellscript; charset="us-ascii"
+          MIME-Version: 1.0
+          Content-Transfer-Encoding: 7bit
+          Content-Disposition: attachment; filename="userdata.txt"
+
+          #!/bin/bash
+
+          # Update server and install dependencies
+          yum update -y
+          yum install epel-release -y
+          yum install curl wget tar bzip2 gzip unzip python3 binutils bc jq tmux glibc.i686 libstdc++ libstdc++.i686 -y
+
+          # Create new user to use
+          adduser vhserver
+          su - vhserver
+          cd /home/vhserver
+
+          # Use LinuxGSM automated install
+          sudo -u vhserver wget -O linuxgsm.sh https://linuxgsm.sh --output-file=wget_error.log
+          sudo -u vhserver chmod +x linuxgsm.sh
+          sudo -u vhserver bash linuxgsm.sh vhserver
+
+          # Install Valheim
+          sudo -u vhserver ./vhserver auto-install
+
+          # Configure the server with our parameters
+          sudo -u vhserver sed -i 's/\"My server\"/\"${ServerName}\"/g' /home/vhserver/serverfiles/start_server.sh 
+          sudo -u vhserver sed -i 's/\"Dedicated\"/\"${ServerName}\"/g' /home/vhserver/serverfiles/start_server.sh 
+          sudo -u vhserver sed -i 's/\"secret\"/\"${ServerPassword}\"/g' /home/vhserver/serverfiles/start_server.sh
+
+          # Start the server
+          sudo -u vhserver ./vhserver start
+
+          # Check everything is working
+          sudo -u vhserver ./vhserver monitor
+
+          # Setup cronjobs
+          sudo -u vhserver crontab -l > /tmp/crontab_backup
+          echo 'MAILTO="${EmailAddress}"' >> /tmp/crontab_backup
+          echo '*/5 * * * * /home/vhserver/vhserver monitor > /dev/null 2>&1' >> /tmp/crontab_backup
+          echo '*/30 * * * * /home/vhserver/vhserver update > /dev/null 2>&1' >> /tmp/crontab_backup
+          echo '0 0 * * 0 /home/vhserver/vhserver update-lgsm > /dev/null 2>&1' >> /tmp/crontab_backup
+          sudo -u vhserver crontab /tmp/crontab_backup
 
       Tags:
         - Key: Name
@@ -97,3 +148,11 @@ Resources:
       Path: /
       Roles:
         - !Ref InstanceRole
+
+Outputs:
+  ServerPublicIP:
+    Description: The IP you can use to connect to your server
+    Value: !GetAtt EC2Instance.PublicIp
+  FullServerAddress:
+    Description: The IP you can use to connect to your server
+    Value: !Sub "http://${EC2Instance.PublicIp}:2456"

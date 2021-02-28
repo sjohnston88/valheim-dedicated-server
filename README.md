@@ -1,6 +1,6 @@
 # Valheim Server
 
-Automated Valheim dedicated server installation which runs using AWS EC2 within the free tier.
+Automated Valheim dedicated server installation which spins up a AWS EC2 t2.medium instance running red hat based OS. (Amazon Linux/CentOS). Installs and starts your server automatically using LinuxGSM and sets up some email alerts for when the server is updated or down.
 
 ## Requirements
 
@@ -15,19 +15,20 @@ These are free so long as you stay within their limitations, which this reposito
 1. Fork this repository
 2. Login to CircleCI, and give permissions to the new project.
 3. Add your `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and `AWS_DEFAULT_REGION` settings as environment variables.
-4. Create another environment variable; `SERVER_PASSWORD` - this will be the password you login to the server is.
+4. Also add `SERVER_PASSWORD` and `EMAIL_ADDRESS` environment variables.
 5. Restart the build in CircleCI.
 6. Volia, you should now be setup and running :)
 
 Please note that the script is set to deploy to eu-west-1 (London) by default. Configure this in deploy.sh if you want to change it.
 
+## TODO - Automated nightly backups
+
+EC2 DataLifeCycle Policy
+
+## TODO - Importing an existing world
+
+This is a manual step and requires connecting to your server using SFTP
+
+## Issues
+
 Please create issues if you find any :)
-
-## Todo
-
-- Open and edit the server_config.bat file
-- Launch the server.
-- Output ElasticIP
-- Route53 DNS records
-- Automated nightly backups
-- Remove KeyPair from EC2 cloudformation when finished
