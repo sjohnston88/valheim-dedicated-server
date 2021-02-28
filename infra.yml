@@ -68,9 +68,9 @@ Resources:
           sudo -u vhserver ./vhserver auto-install
 
           # Configure the server with our parameters
-          sed -i 's/\"My server\"/\"${ServerName}\"/g' /home/vhserver/serverfiles/start_server.sh 
-          sed -i 's/\"Dedicated\"/\"${ServerName}\"/g' /home/vhserver/serverfiles/start_server.sh 
-          sed -i 's/\"secret\"/\"${ServerPassword}\"/g' /home/vhserver/serverfiles/start_server.sh
+          sudo -u vhserver sed -i 's/\"My server\"/\"${ServerName}\"/g' /home/vhserver/serverfiles/start_server.sh 
+          sudo -u vhserver sed -i 's/\"Dedicated\"/\"${ServerName}\"/g' /home/vhserver/serverfiles/start_server.sh 
+          sudo -u vhserver sed -i 's/\"secret\"/\"${ServerPassword}\"/g' /home/vhserver/serverfiles/start_server.sh
 
           # Start the server
           sudo -u vhserver ./vhserver start
@@ -79,11 +79,11 @@ Resources:
           sudo -u vhserver ./vhserver monitor
 
           # Setup cronjobs
-          crontab<<EOF
-          MAILTO="${EmailAddress}"
-          */5 * * * * /home/vhserver/vhserver monitor > /dev/null 2>&1
-          */30 * * * * /home/vhserver/vhserver update > /dev/null 2>&1
-          0 0 * * 0 /home/vhserver/vhserver update-lgsm > /dev/null 2>&1
+          sudo -u vhserver crontab<<EOF
+          echo 'MAILTO="${EmailAddress}"'
+          echo '*/5 * * * * /home/vhserver/vhserver monitor > /dev/null 2>&1'
+          echo '*/30 * * * * /home/vhserver/vhserver update > /dev/null 2>&1'
+          echo '0 0 * * 0 /home/vhserver/vhserver update-lgsm > /dev/null 2>&1'
           EOF
 
       Tags:
@@ -155,4 +155,4 @@ Outputs:
     Value: !GetAtt EC2Instance.PublicIp
   FullServerAddress:
     Description: The IP you can use to connect to your server
-    Value: Sub! "http://${EC2Instance.PublicIp}:2457"
+    Value: !Sub "http://${EC2Instance.PublicIp}:2456"
