@@ -57,6 +57,7 @@ Resources:
           # Create new user to use
           adduser vhserver
           su - vhserver
+          cd /home/vhserver
 
           # Use LinuxGSM automated install
           wget -O linuxgsm.sh https://linuxgsm.sh && chmod +x linuxgsm.sh && bash linuxgsm.sh vhserver
@@ -65,9 +66,9 @@ Resources:
           ./vhserver auto-install
 
           # Configure the server with our parameters
-          sed -i 's/\"My server\"/\"${ServerName}\"/g' /home/ec2-user/serverfiles/start_server.sh 
-          sed -i 's/\"Dedicated\"/\"${ServerName}\"/g' /home/ec2-user/serverfiles/start_server.sh 
-          sed -i 's/\"secret\"/\"${ServerPassword}\"/g' /home/ec2-user/serverfiles/start_server.sh
+          sed -i 's/\"My server\"/\"${ServerName}\"/g' /home/vhserver/serverfiles/start_server.sh 
+          sed -i 's/\"Dedicated\"/\"${ServerName}\"/g' /home/vhserver/serverfiles/start_server.sh 
+          sed -i 's/\"secret\"/\"${ServerPassword}\"/g' /home/vhserver/serverfiles/start_server.sh
 
           # Start the server
           ./vhserver start
