@@ -68,9 +68,7 @@ Resources:
           sudo -u vhserver ./vhserver auto-install
 
           # Configure the server with our parameters
-          sudo -u vhserver sed -i 's/\"My server\"/\"${ServerName}\"/g' /home/vhserver/serverfiles/start_server.sh 
-          sudo -u vhserver sed -i 's/\"Dedicated\"/\"${ServerName}\"/g' /home/vhserver/serverfiles/start_server.sh 
-          sudo -u vhserver sed -i 's/\"secret\"/\"${ServerPassword}\"/g' /home/vhserver/serverfiles/start_server.sh
+          echo 'startparameters="-name '${ServerName}' -password ${ServerPassword} -port 2456 -world '${ServerName}' -public 1"' >> /home/vhserver/lgsm/config-lgsm/vhserver/vhserver.cfg
 
           # Start the server
           sudo -u vhserver ./vhserver start
