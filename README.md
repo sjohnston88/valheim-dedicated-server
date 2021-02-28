@@ -21,6 +21,10 @@ These are free so long as you stay within their limitations, which this reposito
 
 Please note that the script is set to deploy to eu-west-1 (London) by default. Configure this in deploy.sh if you want to change it.
 
+## TODO - Automated nightly backups
+
+EC2 DataLifeCycle Policy
+
 ## TODO - Importing an existing world
 
 This is a manual step and requires connecting to your server using SFTP

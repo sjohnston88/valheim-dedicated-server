@@ -149,27 +149,6 @@ Resources:
       Roles:
         - !Ref InstanceRole
 
-  # Create a DataLifeCyclePolicy for Automated Backups
-  DataLifeCyclePolicy:
-    Type: "AWS::DLM::LifecyclePolicy"
-    Properties:
-      Description: "Automated backups for valheim server"
-      State: "ENABLED"
-      ExecutionRoleArn: arn:aws:iam::344682226882:role/service-role/AWSDataLifecycleManagerDefaultRole
-      PolicyDetails:
-        ResourceTypes:
-          - "VOLUME"
-        Schedules:
-          - Name: "Valheim-Server-DLMLifecyclePolicy"
-            CreateRule:
-              Interval: 12
-              IntervalUnit: "HOURS"
-              Times:
-                - "13:00"
-            RetainRule:
-              Count: 1
-            CopyTags: true
-
 Outputs:
   ServerPublicIP:
     Description: The IP you can use to connect to your server
