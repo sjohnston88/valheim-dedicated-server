@@ -60,7 +60,9 @@ Resources:
           cd /home/vhserver
 
           # Use LinuxGSM automated install
-          wget -O linuxgsm.sh https://linuxgsm.sh && chmod +x linuxgsm.sh && bash linuxgsm.sh vhserver
+          wget -O linuxgsm.sh https://linuxgsm.sh
+          chmod +x linuxgsm.sh
+          bash linuxgsm.sh vhserver
 
           # Install Valheim
           ./vhserver auto-install
@@ -78,7 +80,7 @@ Resources:
 
           # Setup cronjobs
           crontab<<EOF
-          MAILTO="${EmailAddress}""
+          MAILTO="${EmailAddress}"
           */5 * * * * /home/vhserver/vhserver monitor > /dev/null 2>&1
           */30 * * * * /home/vhserver/vhserver update > /dev/null 2>&1
           0 0 * * 0 /home/vhserver/vhserver update-lgsm > /dev/null 2>&1
@@ -151,3 +153,6 @@ Outputs:
   ServerPublicIP:
     Description: The IP you can use to connect to your server
     Value: !GetAtt EC2Instance.PublicIp
+  FullServerAddress:
+    Description: The IP you can use to connect to your server
+    Value: Sub! "http://${EC2Instance.PublicIp}:2457"
