@@ -60,12 +60,12 @@ Resources:
           cd /home/vhserver
 
           # Use LinuxGSM automated install
-          wget -O linuxgsm.sh https://linuxgsm.sh
-          chmod +x linuxgsm.sh
-          bash linuxgsm.sh vhserver
+          sudo -u vhserver wget -O linuxgsm.sh https://linuxgsm.sh --output-file=wget_error.log
+          sudo -u vhserver chmod +x linuxgsm.sh
+          sudo -u vhserver bash linuxgsm.sh vhserver
 
           # Install Valheim
-          ./vhserver auto-install
+          sudo -u vhserver ./vhserver auto-install
 
           # Configure the server with our parameters
           sed -i 's/\"My server\"/\"${ServerName}\"/g' /home/vhserver/serverfiles/start_server.sh 
@@ -73,10 +73,10 @@ Resources:
           sed -i 's/\"secret\"/\"${ServerPassword}\"/g' /home/vhserver/serverfiles/start_server.sh
 
           # Start the server
-          ./vhserver start
+          sudo -u vhserver ./vhserver start
 
           # Check everything is working
-          ./vhserver monitor
+          sudo -u vhserver ./vhserver monitor
 
           # Setup cronjobs
           crontab<<EOF
