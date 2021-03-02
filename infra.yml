@@ -4,17 +4,20 @@ Parameters:
   ServerName:
     Type: String
     Description: The public name for your Valheim dedicated server
-    Default: "Dedicated Valheim server - LDN"
+    Default: "Dedicated Valheim server"
   AMI:
     Type: String
     Description: The Base image for your server, defaults to Amazon AMI eu-west-2
     Default: "ami-0ffd774e02309201f"
   ServerPassword:
     Type: String
-    Description: The password for your Valheim dedicated server.
+    Description: The password for your Valheim dedicated server
   EmailAddress:
     Type: String
-    Description: An email address to use for server change notifications. (restarted|updated|crashed)
+    Description: An email address to use for server change notifications. (restarted|updated|crashed|backup)
+  S3BucketName:
+    Type: String
+    Description: The unique name of an S3 bucket to restore and backup to
 
 Resources:
   EC2Instance:
@@ -70,19 +73,43 @@ Resources:
           # Configure the server with our parameters
           echo 'startparameters="-name '${ServerName}' -password ${ServerPassword} -port 2456 -world '${ServerName}' -public 1"' >> /home/vhserver/lgsm/config-lgsm/vhserver/vhserver.cfg
 
+          # Create cron tasks
+          touch /tmp/crontab_template
+          touch /tmp/global_crontab_template
+          echo 'MAILTO="${EmailAddress}"' >> /tmp/crontab_template
+          echo '*/5 * * * * /home/vhserver/vhserver monitor > /dev/null 2>&1' >> /tmp/crontab_template
+          echo '*/30 * * * * /home/vhserver/vhserver update > /dev/null 2>&1' >> /tmp/crontab_template
+          echo '0 0 * * 0 /home/vhserver/vhserver update-lgsm > /dev/null 2>&1' >> /tmp/crontab_template
+
+          # Setup Automated Nightly Backups
+          if [[ -z "${S3BucketName}" ]]; then
+            echo 'No S3 Bucket Set - Skipping Backup Setup'
+          else
+            touch /home/vhserver/backup_worlds.sh
+            chmod +x /home/vhserver/backup_worlds.sh
+            echo '#!/bin/sh' >> /home/vhserver/backup_worlds.sh
+            echo '' >> /home/vhserver/backup_worlds.sh
+            echo 'aws s3 cp /home/vhserver/.config/unity3d/IronGate/Valheim/worlds s3://${S3BucketName}/vhserver/ --recursive' >> /home/vhserver/backup_worlds.sh
+            echo 'MAILTO="${EmailAddress}"' >> /tmp/global_crontab_template
+            echo '0 3 * * * /home/vhserver/backup_worlds.sh > /dev/null 2>&1' >> /tmp/global_crontab_template
+          fi
+
+          # Restore Existing Worlds / From Backup
+          if [[ -z "${S3BucketName}" ]]; then
+            echo 'NO S3 Bucket Set - Skipping Restore Setup'
+          else
+            aws s3 cp s3://${S3BucketName}/vhserver/ /home/vhserver/.config/unity3d/IronGate/Valheim/worlds --recursive
+          fi
+
+          # Add cron tasks
+          sudo -u vhserver crontab /tmp/crontab_template
+          sudo crontab /tmp/global_crontab_template
+            
           # Start the server
           sudo -u vhserver ./vhserver start
 
           # Check everything is working
           sudo -u vhserver ./vhserver monitor
-
-          # Setup cronjobs
-          sudo -u vhserver crontab -l > /tmp/crontab_backup
-          echo 'MAILTO="${EmailAddress}"' >> /tmp/crontab_backup
-          echo '*/5 * * * * /home/vhserver/vhserver monitor > /dev/null 2>&1' >> /tmp/crontab_backup
-          echo '*/30 * * * * /home/vhserver/vhserver update > /dev/null 2>&1' >> /tmp/crontab_backup
-          echo '0 0 * * 0 /home/vhserver/vhserver update-lgsm > /dev/null 2>&1' >> /tmp/crontab_backup
-          sudo -u vhserver crontab /tmp/crontab_backup
 
       Tags:
         - Key: Name
@@ -134,6 +161,16 @@ Resources:
                 - ec2.amazonaws.com
             Action:
               - sts:AssumeRole
+      Policies:
+        - PolicyName: DistAccess
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                Resource:
+                  - !Sub arn:aws:s3::*:${S3_BUCKET}/*
       Tags:
         - Key: Name
           Value: Valheim-IAMRole
@@ -148,9 +185,6 @@ Resources:
         - !Ref InstanceRole
 
 Outputs:
-  ServerPublicIP:
-    Description: The IP you can use to connect to your server
-    Value: !GetAtt EC2Instance.PublicIp
   FullServerAddress:
-    Description: The IP you can use to connect to your server
-    Value: !Sub "http://${EC2Instance.PublicIp}:2456"
+    Description: The full address you can use to connect to your server
+    Value: !Sub "${EC2Instance.PublicIp}:2456"
