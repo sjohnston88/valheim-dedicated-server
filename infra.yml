@@ -170,7 +170,7 @@ Resources:
                   - s3:GetObject
                   - s3:PutObject
                 Resource:
-                  - !Sub arn:aws:s3::*:${S3_BUCKET}/*
+                  - !Sub arn:aws:s3::*:${S3BucketName}/*
       Tags:
         - Key: Name
           Value: Valheim-IAMRole
