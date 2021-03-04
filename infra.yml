@@ -67,7 +67,7 @@ Resources:
           sudo -u vhserver bash linuxgsm.sh vhserver
 
           # Install Valheim
-          sudo -u vhserver ./vhserver auto-install
+          sudo -u vhserver /home/vhserver/vhserver auto-install
 
           # Configure the server with our parameters
           echo 'startparameters="-name '${ServerName}' -password ${ServerPassword} -port 2456 -world '${ServerName}' -public 1"' >> /home/vhserver/lgsm/config-lgsm/vhserver/vhserver.cfg
@@ -97,8 +97,9 @@ Resources:
           if [[ -z "${S3BucketName}" ]]; then
             echo 'NO S3 Bucket Set - Skipping Restore Setup'
           else
-            aws s3 cp s3://${S3BucketName}/vhserver/ /home/vhserver/.config/unity3d/IronGate/Valheim/worlds --recursive --exclude "*" --include "${ServerName}.*"
+            aws s3 cp s3://${S3BucketName}/vhserver/ /home/vhserver/.config/unity3d/IronGate/Valheim/worlds --recursive --exclude "*" --include "${ServerName}.*" --include "Dedicated.*"
             chown vhserver:vhserver /home/vhserver/.config/unity3d/IronGate/Valheim/worlds/*
+            chmod -R 665 /home/vhserver/.config/unity3d/IronGate/Valheim/worlds/*
           fi
 
           # Add cron tasks
@@ -106,10 +107,10 @@ Resources:
           sudo crontab /tmp/global_crontab_template
             
           # Start the server
-          sudo -u vhserver ./vhserver start
+          sudo -u vhserver /home/vhserver/vhserver start
 
           # Check everything is working
-          sudo -u vhserver ./vhserver monitor
+          sudo -u vhserver /home/vhserver/vhserver monitor
 
       Tags:
         - Key: Name
