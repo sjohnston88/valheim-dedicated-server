@@ -93,13 +93,6 @@ Resources:
             echo '0 3 * * * /home/vhserver/backup_worlds.sh > /dev/null 2>&1' >> /tmp/global_crontab_template
           fi
 
-          # Restore Existing Worlds / From Backup
-          if [[ -z "${S3BucketName}" ]]; then
-            echo 'NO S3 Bucket Set - Skipping Restore Setup'
-          else
-            # aws s3 cp s3://${S3BucketName}/vhserver/ /home/vhserver/.config/unity3d/IronGate/Valheim/worlds --recursive
-          fi
-
           # Add cron tasks
           sudo -u vhserver crontab /tmp/crontab_template
           sudo crontab /tmp/global_crontab_template
