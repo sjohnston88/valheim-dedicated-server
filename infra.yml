@@ -80,7 +80,7 @@ Resources:
           echo '*/30 * * * * /home/vhserver/vhserver update > /dev/null 2>&1' >> /tmp/crontab_template
           echo '0 0 * * 0 /home/vhserver/vhserver update-lgsm > /dev/null 2>&1' >> /tmp/crontab_template
 
-          # Setup Automated Nightly Backups
+          # Setup Automated Half Hourly Backups
           if [[ -z "${S3BucketName}" ]]; then
             echo 'No S3 Bucket Set - Skipping Backup Setup'
           else
@@ -90,7 +90,15 @@ Resources:
             echo '' >> /home/vhserver/backup_worlds.sh
             echo 'aws s3 cp /home/vhserver/.config/unity3d/IronGate/Valheim/worlds s3://${S3BucketName}/vhserver/ --recursive' >> /home/vhserver/backup_worlds.sh
             echo 'MAILTO="${EmailAddress}"' >> /tmp/global_crontab_template
-            echo '0 3 * * * /home/vhserver/backup_worlds.sh > /dev/null 2>&1' >> /tmp/global_crontab_template
+            echo '*/30 * * * * /home/vhserver/backup_worlds.sh > /dev/null 2>&1' >> /tmp/global_crontab_template
+          fi
+
+          # Restore Existing Worlds / From Backup
+          if [[ -z "${S3BucketName}" ]]; then
+            echo 'NO S3 Bucket Set - Skipping Restore Setup'
+          else
+            aws s3 cp s3://${S3BucketName}/vhserver/ /home/vhserver/.config/unity3d/IronGate/Valheim/worlds --recursive --exclude "*" --include "${ServerName}.*"
+            chown vhserver:vhserver /home/vhserver/.config/unity3d/IronGate/Valheim/worlds/*
           fi
 
           # Add cron tasks

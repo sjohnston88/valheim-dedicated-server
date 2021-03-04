@@ -20,7 +20,7 @@ Automated Valheim dedicated server installation which spins up a AWS EC2 t2.medi
 
 Please note that the default AMI is based in eu-west-2, if you want to spin up a server in a different region, you can set the `CUSTOM_AMI` environment variable.
 
-## Automated nightly backups
+## Automated half hourly backups
 
 If you set the `S3_BUCKET` environment variable your world files we be automatically backed up night. Backups are not versioned and only one backup will exist at any given time, older backups are automatically overwritten.
 
@@ -28,7 +28,7 @@ If you set the `S3_BUCKET` environment variable your world files we be automatic
 
 ### Automated Import
 
-If you set the `S3_BUCKET` environment variable and the bucket contains a folder called `vhserver` containing your world files, they will be automatically downloaded and configured when the server first boots.
+If you set the `S3_BUCKET` environment variable and the bucket contains a folder called `vhserver` containing your world files, they will be automatically downloaded and configured when the server first boots. Your backup files must be the same as your server name, ignoring any file extensions.
 
 ### Manual Importing steps
 
