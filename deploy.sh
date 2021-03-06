@@ -1,7 +1,7 @@
 #!/bin/bash
 
 aws cloudformation deploy \
-    --stack-name valheim-server-testing \
+    --stack-name valheim-server \
     --capabilities CAPABILITY_NAMED_IAM \
     --template-file ./infra.yml \
     --no-fail-on-empty-changeset \
