@@ -97,10 +97,11 @@ Resources:
           if [[ -z "${S3BucketName}" ]]; then
             echo 'NO S3 Bucket Set - Skipping Restore Setup'
           else
-            aws s3 cp s3://${S3BucketName}/vhserver/ /home/vhserver/.config/unity3d/IronGate/Valheim/worlds --recursive --exclude "*" --include "${ServerName}.*" --include "Dedicated.*"
-            chown vhserver:vhserver /home/vhserver/.config/unity3d/IronGate/Valheim/worlds/*
-            chmod -R 665 /home/vhserver/.config/unity3d/IronGate/Valheim/worlds/*
+            aws s3 cp s3://${S3BucketName}/vhserver/ /home/vhserver/.config/unity3d/IronGate/Valheim/worlds --recursive --exclude "*" --include "${ServerName}.*"
           fi
+
+          # Ensure vhserver owns all files and folders
+          sudo chown -R vhserver:vhserver /home/vhserver
 
           # Add cron tasks
           sudo -u vhserver crontab /tmp/crontab_template
