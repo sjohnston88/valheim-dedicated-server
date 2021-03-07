@@ -151,7 +151,7 @@ Resources:
   InstanceRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: Valheim-IAMRole-testing
+      RoleName: Valheim-IAMRole
       Path: /
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM
@@ -181,7 +181,7 @@ Resources:
   InstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
-      InstanceProfileName: Valheim-IAMInstanceProfile-testing
+      InstanceProfileName: Valheim-IAMInstanceProfile
       Path: /
       Roles:
         - !Ref InstanceRole
